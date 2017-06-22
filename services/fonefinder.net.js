@@ -23,30 +23,34 @@ module.exports = function (request, jar, number, opts, fn) {
       var lines
         , map = {}
         ;
-        
-      lines = /TABLE.*?>([\s\S]*)<\/TABLE/.exec(data)[1];
-      lines = /TR.*?TR.*?>([\s\S]*)<TR/.exec(lines)[1];
-      lines = lines
+            if (/TABLE.*?>([\s\S]*)<\/TABLE/.exec(data) === null) {
+                fn(null, map, { authoritative: false });
+            }
+            else {
+                lines = /TABLE.*?>([\s\S]*)<\/TABLE/.exec(data)[1];
+                lines = /TR.*?TR.*?>([\s\S]*)<TR/.exec(lines)[1];
+                lines = lines
         .replace(/<a.*?>(.*?)<\/a>/ig, '$1')
         .replace(/<td>/ig, '\n')
         .replace(/<img.*>/ig, '\n')
         .replace(/<\/td>/ig, '\n')
         .trim()
         .split(/\n/g)
-        ;
+                ;
 
-      // lines 0 & 1 are area code and prefix
-      // lines 2 & 3 are bogus
-      // lines 4 & 5 
-      map.number = number;
-      // wireless
-      // carrier
-      carriers.lookup(number, lines[4], map);
-      carriers.lookup(number, lines[5], map);
-      //map.carrier = carriers.lookupBySmsGateway(map.smsGateway) || carriers.lookupByComment(lines[4]);
-      map.carrierComment = lines[4];
-      map.typeComment = lines[5];
-      fn(null, map, { authoritative: false });
+                // lines 0 & 1 are area code and prefix
+                // lines 2 & 3 are bogus
+                // lines 4 & 5
+                map.number = number;
+                // wireless
+                // carrier
+                carriers.lookup(number, lines[4], map);
+                carriers.lookup(number, lines[5], map);
+                //map.carrier = carriers.lookupBySmsGateway(map.smsGateway) || carriers.lookupByComment(lines[4]);
+                map.carrierComment = lines[4];
+                map.typeComment = lines[5];
+                fn(null, map, { authoritative: false });
+            }
     }
-  ); 
+  );
 };
